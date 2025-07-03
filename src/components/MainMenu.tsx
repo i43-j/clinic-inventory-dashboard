@@ -20,7 +20,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onActionSelect }) => {
     {
       action: 'view-stock' as ActionType,
       title: 'View Stock',
-      description: 'Check current inventory levels',
+      description: 'Check current inventory levels\n',
       icon: '📊',
       color: 'bg-blue-500 hover:bg-blue-600'
     },
