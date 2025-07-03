@@ -57,7 +57,7 @@ export const ViewClosestExpiryForm: React.FC<ViewClosestExpiryFormProps> = ({ on
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <span>⏰</span>
-          <span>View Closest Expiry<br></span>
+          <span>View Closest Expiry</span>
         </CardTitle>
         <CardDescription>Check products that are expiring soon to prioritize usage</CardDescription>
       </CardHeader>
