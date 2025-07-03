@@ -13,7 +13,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onActionSelect }) => {
     {
       action: 'log-batch' as ActionType,
       title: 'Log New Batch',
-      description: 'Record a new batch of products received',
+      description: 'Record a new batch of products',
       icon: '📦',
       color: 'bg-green-500 hover:bg-green-600'
     },
@@ -41,7 +41,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onActionSelect }) => {
     {
       action: 'add-product' as ActionType,
       title: 'Add Product',
-      description: 'Register a new product in the system',
+      description: 'Register a new product',
       icon: '➕',
       color: 'bg-indigo-500 hover:bg-indigo-600'
     }
