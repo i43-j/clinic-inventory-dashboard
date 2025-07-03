@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { MainMenu } from '../components/MainMenu';
+import { DashboardStats } from '../components/DashboardStats';
 import { LogNewBatchForm } from '../components/forms/LogNewBatchForm';
 import { ViewStockForm } from '../components/forms/ViewStockForm';
 import { ViewClosestExpiryForm } from '../components/forms/ViewClosestExpiryForm';
@@ -26,6 +26,19 @@ export interface SubmissionResult {
 const Index = () => {
   const [currentAction, setCurrentAction] = useState<ActionType>(null);
   const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
+
+  // Mock data for dashboard - replace with actual API calls
+  const mockDashboardData = {
+    totalProducts: 42,
+    expiringBatches: 3,
+    outOfStockSKUs: 1,
+    lastAddedProduct: "Royal Canin Kitten 2kg",
+    recentActivity: [
+      { id: "1", action: "Logged new batch", product: "Royal Canin", date: "07/03" },
+      { id: "2", action: "Updated stock", product: "Frontline Plus", date: "06/03" },
+      { id: "3", action: "Added product", product: "Hill's Science Diet", date: "05/03" }
+    ]
+  };
 
   const handleActionSelect = (action: ActionType) => {
     setCurrentAction(action);
@@ -66,7 +79,12 @@ const Index = () => {
       case 'add-product':
         return <AddingProductForm onSubmit={handleFormSubmit} onBack={handleBackToMenu} />;
       default:
-        return <MainMenu onActionSelect={handleActionSelect} />;
+        return (
+          <>
+            <DashboardStats {...mockDashboardData} />
+            <MainMenu onActionSelect={handleActionSelect} />
+          </>
+        );
     }
   };
 
