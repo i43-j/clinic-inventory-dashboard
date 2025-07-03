@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -7,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Image } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Upload, Image, Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
-import { submitToWebhook } from '../../utils/webhookSubmission';
+import { submitToWebhook, processImageOCR } from '../../utils/webhookSubmission';
 import { mockProducts } from '../../data/mockData';
 
 interface LogNewBatchFormProps {
@@ -29,6 +29,7 @@ interface FormData {
 
 export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBack }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
@@ -42,7 +43,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
 
   const selectedProduct = watch('product');
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedImage(file);
@@ -51,6 +52,35 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Process image for OCR immediately
+      setIsProcessingImage(true);
+      try {
+        const ocrResult = await processImageOCR(file);
+        if (ocrResult.success && ocrResult.data) {
+          // Auto-fill form fields based on OCR results
+          if (ocrResult.data.product) {
+            setValue('product', ocrResult.data.product);
+          }
+          if (ocrResult.data.batchName) {
+            setValue('batchName', ocrResult.data.batchName);
+          }
+          if (ocrResult.data.quantity) {
+            setValue('quantity', parseInt(ocrResult.data.quantity));
+          }
+          if (ocrResult.data.expiryDate) {
+            setValue('expiryDate', ocrResult.data.expiryDate);
+          }
+          if (ocrResult.data.notes) {
+            setValue('notes', ocrResult.data.notes);
+          }
+          console.log('OCR data applied to form:', ocrResult.data);
+        }
+      } catch (error) {
+        console.error('OCR processing failed:', error);
+      } finally {
+        setIsProcessingImage(false);
+      }
     }
   };
 
@@ -100,7 +130,18 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
             <p className="text-sm text-gray-600">Upload an image of the product label or batch information for automatic OCR processing</p>
             
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-              {imagePreview ? (
+              {isProcessingImage ? (
+                <div className="space-y-4">
+                  <div className="flex justify-center">
+                    <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />
+                  </div>
+                  <div>
+                    <p className="text-blue-600 font-medium">Processing image...</p>
+                    <p className="text-sm text-gray-500">Extracting batch information automatically</p>
+                  </div>
+                  <Progress value={75} className="w-full" />
+                </div>
+              ) : imagePreview ? (
                 <div className="space-y-4">
                   <img 
                     src={imagePreview} 
@@ -134,6 +175,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
                 accept="image/*"
                 onChange={handleImageChange}
                 className="hidden"
+                disabled={isProcessingImage}
               />
             </div>
           </div>
@@ -224,7 +266,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
             </Button>
             <Button 
               type="submit" 
-              disabled={isSubmitting}
+              disabled={isSubmitting || isProcessingImage}
               className="flex-1 bg-green-600 hover:bg-green-700"
             >
               {isSubmitting ? 'Logging Batch...' : 'Log Batch'}

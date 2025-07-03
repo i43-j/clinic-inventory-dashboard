@@ -57,3 +57,53 @@ export const submitToWebhook = async (data: any | FormData): Promise<SubmissionR
     }
   }
 };
+
+export const processImageOCR = async (imageFile: File): Promise<SubmissionResult> => {
+  console.log('Processing image for OCR:', imageFile.name);
+
+  const formData = new FormData();
+  formData.append('action', 'ocr-process');
+  formData.append('image', imageFile);
+
+  const requestOptions: RequestInit = {
+    method: 'POST',
+    body: formData,
+  };
+
+  // Try primary webhook first
+  try {
+    const response = await fetch(PRIMARY_WEBHOOK, requestOptions);
+
+    if (response.ok) {
+      const responseData = await response.json();
+      console.log('OCR processing success:', responseData);
+      return { success: true, data: responseData };
+    } else {
+      console.log('OCR processing failed with status:', response.status);
+      throw new Error(`OCR processing failed with status ${response.status}`);
+    }
+  } catch (error) {
+    console.log('OCR processing error:', error);
+    
+    // Try fallback webhook
+    try {
+      console.log('Trying fallback webhook for OCR...');
+      const fallbackResponse = await fetch(FALLBACK_WEBHOOK, requestOptions);
+
+      if (fallbackResponse.ok) {
+        const responseData = await fallbackResponse.json();
+        console.log('OCR fallback success:', responseData);
+        return { success: true, data: responseData };
+      } else {
+        console.log('OCR fallback failed with status:', fallbackResponse.status);
+        throw new Error(`OCR fallback failed with status ${fallbackResponse.status}`);
+      }
+    } catch (fallbackError) {
+      console.log('OCR fallback error:', fallbackError);
+      return {
+        success: false,
+        error: 'OCR processing failed. You can still fill out the form manually.'
+      };
+    }
+  }
+};
