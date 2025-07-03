@@ -4,18 +4,25 @@ import { SubmissionResult } from '../pages/Index';
 const PRIMARY_WEBHOOK = 'https://i43-j.app.n8n.cloud/webhook-test/form';
 const FALLBACK_WEBHOOK = 'https://i43-j.app.n8n.cloud/webhook/form';
 
-export const submitToWebhook = async (data: any): Promise<SubmissionResult> => {
+export const submitToWebhook = async (data: any | FormData): Promise<SubmissionResult> => {
   console.log('Submitting data:', data);
+
+  const isFormData = data instanceof FormData;
+  
+  const requestOptions: RequestInit = {
+    method: 'POST',
+    body: isFormData ? data : JSON.stringify(data),
+  };
+
+  if (!isFormData) {
+    requestOptions.headers = {
+      'Content-Type': 'application/json',
+    };
+  }
 
   // Try primary webhook first
   try {
-    const response = await fetch(PRIMARY_WEBHOOK, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
+    const response = await fetch(PRIMARY_WEBHOOK, requestOptions);
 
     if (response.ok) {
       const responseData = await response.json();
@@ -31,13 +38,7 @@ export const submitToWebhook = async (data: any): Promise<SubmissionResult> => {
     // Try fallback webhook
     try {
       console.log('Trying fallback webhook...');
-      const fallbackResponse = await fetch(FALLBACK_WEBHOOK, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      const fallbackResponse = await fetch(FALLBACK_WEBHOOK, requestOptions);
 
       if (fallbackResponse.ok) {
         const responseData = await fallbackResponse.json();

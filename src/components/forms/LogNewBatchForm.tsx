@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Upload, Image } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
 import { submitToWebhook } from '../../utils/webhookSubmission';
 import { mockProducts } from '../../data/mockData';
@@ -28,6 +29,9 @@ interface FormData {
 
 export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBack }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
     defaultValues: {
       receivedAt: new Date().toISOString().split('T')[0],
@@ -38,16 +42,43 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
 
   const selectedProduct = watch('product');
 
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    const fileInput = document.getElementById('imageUpload') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
   const onFormSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     
-    const submissionData = {
-      action: 'log-batch',
-      ...data,
-      quantity: Number(data.quantity)
-    };
+    const formData = new FormData();
+    formData.append('action', 'log-batch');
+    formData.append('product', data.product);
+    formData.append('batchName', data.batchName);
+    formData.append('quantity', data.quantity.toString());
+    formData.append('expiryDate', data.expiryDate);
+    formData.append('receivedAt', data.receivedAt);
+    formData.append('receivedBy', data.receivedBy);
+    formData.append('notes', data.notes);
+    
+    if (selectedImage) {
+      formData.append('image', selectedImage);
+    }
 
-    const result = await submitToWebhook(submissionData);
+    const result = await submitToWebhook(formData);
     onSubmit(result);
     setIsSubmitting(false);
   };
@@ -63,6 +94,50 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+          {/* Image Upload Section */}
+          <div className="space-y-2">
+            <Label htmlFor="imageUpload">Attach Image (Optional)</Label>
+            <p className="text-sm text-gray-600">Upload an image of the product label or batch information for automatic OCR processing</p>
+            
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+              {imagePreview ? (
+                <div className="space-y-4">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="max-w-full max-h-48 mx-auto rounded-lg shadow-sm"
+                  />
+                  <div className="flex space-x-2 justify-center">
+                    <Button type="button" variant="outline" size="sm" onClick={removeImage}>
+                      Remove Image
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex justify-center">
+                    <Upload className="h-12 w-12 text-gray-400" />
+                  </div>
+                  <div>
+                    <label htmlFor="imageUpload" className="cursor-pointer">
+                      <span className="text-blue-600 hover:text-blue-500 font-medium">Click to upload</span>
+                      <span className="text-gray-500"> or drag and drop</span>
+                    </label>
+                    <p className="text-sm text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
+                  </div>
+                </div>
+              )}
+              
+              <input
+                id="imageUpload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="product">Product *</Label>
             <Select onValueChange={(value) => setValue('product', value)}>
