@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Upload, Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
-import { submitToWebhook, processImageOCR } from '../../utils/webhookSubmission';
+import { submitToWebhook, processImageOCR } from '../../data/webhookService';
 import { useProducts } from '../../hooks/useLiveData';
 
 interface LogNewBatchFormProps {

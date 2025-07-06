@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
-import { submitToWebhook } from '../../utils/webhookSubmission';
+import { submitToWebhook } from '../../data/webhookService';
 import { useProducts } from '../../hooks/useLiveData';
 
 interface ViewStockFormProps {

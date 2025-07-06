@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SubmissionResult } from '../../pages/Index';
-import { submitToWebhook } from '../../utils/webhookSubmission';
+import { submitToWebhook } from '../../data/webhookService';
 
 interface AddingProductFormProps {
   onSubmit: (result: SubmissionResult) => void;

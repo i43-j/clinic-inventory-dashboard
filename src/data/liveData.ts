@@ -1,4 +1,4 @@
-import { submitToWebhook } from '../utils/webhookSubmission';
+import { submitToWebhook } from '../data/webhookService';
 
 export interface Product {
   id: string;
