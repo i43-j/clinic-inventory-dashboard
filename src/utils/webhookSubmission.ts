@@ -4,31 +4,31 @@ import { SubmissionResult } from '../pages/Index';
 const WEBHOOKS = {
   OCR_PROCESS: {
     primary: 'https://i43-j.app.n8n.cloud/webhook/ocr-process',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/ocr-process'
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/ocr-process'
   },
   LOG_BATCH: {
     primary: 'https://i43-j.app.n8n.cloud/webhook/log-batch',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/log-batch'
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/log-batch'
   },
   VIEW_STOCK: {
     primary: 'https://i43-j.app.n8n.cloud/webhook/view-stock',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/view-stock'
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/view-stock'
   },
   VIEW_EXPIRY: {
     primary: 'https://i43-j.app.n8n.cloud/webhook/view-expiry',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/view-expiry'
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/view-expiry'
   },
   UPDATE_STOCK: {
     primary: 'https://i43-j.app.n8n.cloud/webhook/update-stock',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/update-stock'
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/update-stock'
   },
   ADD_PRODUCT: {
     primary: 'https://i43-j.app.n8n.cloud/webhook/add-product',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/add-product'
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/add-product'
   },
   DASHBOARD_STATS: {
     primary: 'https://i43-j.app.n8n.cloud/webhook/dashboard-stats',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/dashboard-stats'
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/dashboard-stats'
   }
 };
 
