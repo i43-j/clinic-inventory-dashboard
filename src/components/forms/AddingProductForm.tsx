@@ -40,7 +40,7 @@ export const AddingProductForm: React.FC<AddingProductFormProps> = ({ onSubmit, 
       ...data
     };
 
-    const result = await submitToWebhook(submissionData, 'add-product');
+    const result = await submitToWebhook(submissionData, 'ADD_PRODUCT');
     onSubmit(result);
     setIsSubmitting(false);
   };
