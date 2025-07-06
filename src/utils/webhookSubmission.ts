@@ -1,6 +1,6 @@
 import { SubmissionResult } from '../pages/Index';
 
-// Proxy endpoint configuration - replace YOUR_PROJECT_ID with your actual Supabase project ID
+// Proxy endpoint configuration - using actual Supabase project ID
 const PROXY_BASE_URL = 'https://xzuenzawbfndvfwfghzi.supabase.co/functions/v1/webhook-proxy';
 
 // Webhook endpoints configuration
