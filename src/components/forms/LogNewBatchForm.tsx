@@ -63,7 +63,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
           console.log('OCR Response:', ocrResult.data);
           
           // Parse OCR response and auto-fill form fields
-          const ocrData = ocrResult.data;
+          const ocrData = Array.isArray(ocrResult.data) ? ocrResult.data[0] : ocrResult.data;
           
           if (ocrData.productName || ocrData.product) {
             const productName = ocrData.productName || ocrData.product;
