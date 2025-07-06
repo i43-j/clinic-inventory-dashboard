@@ -1,8 +1,7 @@
 import { SubmissionResult } from '../pages/Index';
 
-/** Your deployed Supabase Edge Function proxy URL */
-const PROXY_BASE_URL =
-  'https://xzuenzawbfndvfwfghzi.supabase.co/functions/v1/webhook-proxy';
+/** Direct n8n webhook base URL */
+const N8N_BASE_URL = 'https://i43-j.app.n8n.cloud/webhook';
 
 /** All webhook endpoints used in the app */
 const WEBHOOK_ENDPOINTS = {
@@ -56,7 +55,7 @@ export const submitToWebhook = async (
   const isFormData = data instanceof FormData;
   const fetchWithTimeout = createFetchWithTimeout();
 
-  const proxyUrl = `${PROXY_BASE_URL}?endpoint=${webhookCfg.primary}`;
+  const webhookUrl = `${N8N_BASE_URL}/${webhookCfg.primary}`;
 
   const req: RequestInit = { method: isReadOnly ? 'GET' : 'POST' };
 
@@ -66,7 +65,7 @@ export const submitToWebhook = async (
   }
 
   try {
-    const res = await fetchWithTimeout(proxyUrl, req);
+    const res = await fetchWithTimeout(webhookUrl, req);
     if (!res.ok) {
       const txt = await res.text();
       return { success: false, error: `Webhook ${res.status}: ${txt}` };
