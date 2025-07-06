@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
 import { submitToWebhook } from '../../utils/webhookSubmission';
-import { mockProducts, mockBatches } from '../../data/mockData';
+import { useProducts, useBatches } from '../../hooks/useLiveData';
 
 interface UpdatingStockFormProps {
   onSubmit: (result: SubmissionResult) => void;
@@ -25,12 +26,16 @@ interface FormData {
 
 export const UpdatingStockForm: React.FC<UpdatingStockFormProps> = ({ onSubmit, onBack }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { products, loading: productsLoading, error: productsError } = useProducts();
+  const { batches, loading: batchesLoading, error: batchesError } = useBatches();
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>();
 
   const selectedProduct = watch('product');
   const selectedBatch = watch('batch');
 
-  const availableBatches = mockBatches.filter(batch => batch.productId === selectedProduct);
+  const availableBatches = batches.filter(batch => batch.productId === selectedProduct);
+  const isLoading = productsLoading || batchesLoading;
+  const hasError = productsError || batchesError;
 
   const onFormSubmit = async (data: FormData) => {
     setIsSubmitting(true);
@@ -41,10 +46,34 @@ export const UpdatingStockForm: React.FC<UpdatingStockFormProps> = ({ onSubmit, 
       quantity: Number(data.quantity)
     };
 
-    const result = await submitToWebhook(submissionData, 'update-stock');
+    const result = await submitToWebhook(submissionData, 'UPDATE_STOCK');
     onSubmit(result);
     setIsSubmitting(false);
   };
+
+  if (isLoading) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading data...</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="py-8">
+          <p className="text-red-600 text-center">
+            Error loading data: {productsError || batchesError}
+          </p>
+          <Button onClick={onBack} className="w-full mt-4">Back to Menu</Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="max-w-2xl mx-auto">
@@ -64,7 +93,7 @@ export const UpdatingStockForm: React.FC<UpdatingStockFormProps> = ({ onSubmit, 
                 <SelectValue placeholder="Select a product..." />
               </SelectTrigger>
               <SelectContent>
-                {mockProducts.map((product) => (
+                {products.map((product) => (
                   <SelectItem key={product.id} value={product.id}>
                     {product.name}
                   </SelectItem>

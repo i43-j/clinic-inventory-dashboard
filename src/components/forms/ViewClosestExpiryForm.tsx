@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
 import { submitToWebhook } from '../../utils/webhookSubmission';
-import { mockProducts } from '../../data/mockData';
+import { useProducts } from '../../hooks/useLiveData';
 
 interface ViewClosestExpiryFormProps {
   onSubmit: (result: SubmissionResult) => void;
@@ -21,6 +22,7 @@ interface FormData {
 
 export const ViewClosestExpiryForm: React.FC<ViewClosestExpiryFormProps> = ({ onSubmit, onBack }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { products, loading: productsLoading, error: productsError } = useProducts();
   const { handleSubmit, setValue, watch } = useForm<FormData>();
 
   const selectedProduct = watch('product');
@@ -33,7 +35,7 @@ export const ViewClosestExpiryForm: React.FC<ViewClosestExpiryFormProps> = ({ on
       product: data.product || 'all'
     };
 
-    const result = await submitToWebhook(submissionData, 'view-expiry');
+    const result = await submitToWebhook(submissionData, 'VIEW_EXPIRY');
     onSubmit(result);
     setIsSubmitting(false);
   };
@@ -46,11 +48,33 @@ export const ViewClosestExpiryForm: React.FC<ViewClosestExpiryFormProps> = ({ on
       product: 'all'
     };
 
-    submitToWebhook(submissionData, 'view-expiry').then((result) => {
+    submitToWebhook(submissionData, 'VIEW_EXPIRY').then((result) => {
       onSubmit(result);
       setIsSubmitting(false);
     });
   };
+
+  if (productsLoading) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading products...</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (productsError) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="py-8">
+          <p className="text-red-600 text-center">Error loading products: {productsError}</p>
+          <Button onClick={onBack} className="w-full mt-4">Back to Menu</Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="max-w-2xl mx-auto">
@@ -93,7 +117,7 @@ export const ViewClosestExpiryForm: React.FC<ViewClosestExpiryFormProps> = ({ on
                     <SelectValue placeholder="Select a specific product..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockProducts.map((product) => (
+                    {products.map((product) => (
                       <SelectItem key={product.id} value={product.id}>
                         {product.name}
                       </SelectItem>

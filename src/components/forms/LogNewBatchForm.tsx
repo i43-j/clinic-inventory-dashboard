@@ -7,10 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Upload, Image, Loader2 } from 'lucide-react';
+import { Upload, Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
 import { submitToWebhook, processImageOCR } from '../../utils/webhookSubmission';
-import { mockProducts } from '../../data/mockData';
+import { useProducts } from '../../hooks/useLiveData';
 
 interface LogNewBatchFormProps {
   onSubmit: (result: SubmissionResult) => void;
@@ -32,6 +32,8 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  const { products, loading: productsLoading, error: productsError } = useProducts();
   
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
     defaultValues: {
@@ -58,23 +60,48 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
       try {
         const ocrResult = await processImageOCR(file);
         if (ocrResult.success && ocrResult.data) {
-          // Auto-fill form fields based on OCR results
-          if (ocrResult.data.product) {
-            setValue('product', ocrResult.data.product);
+          console.log('OCR Response:', ocrResult.data);
+          
+          // Parse OCR response and auto-fill form fields
+          const ocrData = ocrResult.data;
+          
+          if (ocrData.productName || ocrData.product) {
+            const productName = ocrData.productName || ocrData.product;
+            // Find matching product by name
+            const matchingProduct = products.find(p => 
+              p.name.toLowerCase().includes(productName.toLowerCase()) ||
+              productName.toLowerCase().includes(p.name.toLowerCase())
+            );
+            if (matchingProduct) {
+              setValue('product', matchingProduct.id);
+            }
           }
-          if (ocrResult.data.batchName) {
-            setValue('batchName', ocrResult.data.batchName);
+          
+          if (ocrData.batchName || ocrData.batch) {
+            setValue('batchName', ocrData.batchName || ocrData.batch);
           }
-          if (ocrResult.data.quantity) {
-            setValue('quantity', parseInt(ocrResult.data.quantity));
+          
+          if (ocrData.quantity) {
+            const qty = parseInt(ocrData.quantity.toString());
+            if (!isNaN(qty)) {
+              setValue('quantity', qty);
+            }
           }
-          if (ocrResult.data.expiryDate) {
-            setValue('expiryDate', ocrResult.data.expiryDate);
+          
+          if (ocrData.expiryDate || ocrData.expiry) {
+            const expiryStr = ocrData.expiryDate || ocrData.expiry;
+            // Try to parse and format the date
+            const parsedDate = new Date(expiryStr);
+            if (!isNaN(parsedDate.getTime())) {
+              setValue('expiryDate', parsedDate.toISOString().split('T')[0]);
+            }
           }
-          if (ocrResult.data.notes) {
-            setValue('notes', ocrResult.data.notes);
+          
+          if (ocrData.notes || ocrData.description) {
+            setValue('notes', ocrData.notes || ocrData.description);
           }
-          console.log('OCR data applied to form:', ocrResult.data);
+          
+          console.log('OCR data applied to form:', ocrData);
         }
       } catch (error) {
         console.error('OCR processing failed:', error);
@@ -112,6 +139,28 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
     onSubmit(result);
     setIsSubmitting(false);
   };
+
+  if (productsLoading) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading products...</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (productsError) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="py-8">
+          <p className="text-red-600 text-center">Error loading products: {productsError}</p>
+          <Button onClick={onBack} className="w-full mt-4">Back to Menu</Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="max-w-2xl mx-auto">
@@ -187,7 +236,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
                 <SelectValue placeholder="Search and select a product..." />
               </SelectTrigger>
               <SelectContent>
-                {mockProducts.map((product) => (
+                {products.map((product) => (
                   <SelectItem key={product.id} value={product.id}>
                     {product.name}
                   </SelectItem>

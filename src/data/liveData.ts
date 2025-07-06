@@ -1,5 +1,5 @@
 // liveData.ts - Replace your mockData.ts with this
-import { submitToWebhook } from './webhookService';
+import { submitToWebhook } from '../utils/webhookSubmission';
 
 export interface Product {
   id: string;

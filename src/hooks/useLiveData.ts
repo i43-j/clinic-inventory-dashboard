@@ -9,7 +9,7 @@ import {
   Product, 
   Batch, 
   StockLevel 
-} from '../services/liveData';
+} from '../data/liveData';
 
 export interface LiveDataState {
   products: Product[];
