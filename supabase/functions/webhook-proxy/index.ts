@@ -41,10 +41,23 @@ serve(async (req) => {
     headers.delete("host")
 
     // Build the proxied request - always use POST for n8n webhooks
+    let body = null;
+    if (req.method !== "GET") {
+      // Handle different content types properly
+      const contentType = req.headers.get("content-type");
+      if (contentType && contentType.includes("multipart/form-data")) {
+        // For file uploads, forward the FormData directly
+        body = await req.formData();
+      } else {
+        // For JSON and other text-based content
+        body = await req.text();
+      }
+    }
+
     const forwardedRequest = new Request(n8nUrl, {
       method: "POST",
       headers,
-      body: await req.text(),
+      body,
     })
 
     // Fetch from n8n
