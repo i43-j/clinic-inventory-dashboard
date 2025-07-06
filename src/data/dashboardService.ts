@@ -1,4 +1,4 @@
-import { submitToWebhook } from '../utils/webhookSubmission';
+import { submitToWebhook } from './webhookService';
 
 export interface DashboardStats {
   totalProducts: number;
