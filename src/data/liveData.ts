@@ -28,7 +28,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 // Fetch live products from n8n/Supabase
 export const fetchLiveProducts = async (): Promise<Product[]> => {
   try {
-    const result = await submitToWebhook({ action: 'get-products' }, 'VIEW_STOCK');
+    const result = await submitToWebhook({ action: 'get-products' }, 'GET_PRODUCTS');
     
     if (result.success && result.data) {
       const products = result.data.products || [];
@@ -53,7 +53,7 @@ export const fetchLiveProducts = async (): Promise<Product[]> => {
 // Fetch live batches from n8n/Supabase
 export const fetchLiveBatches = async (): Promise<Batch[]> => {
   try {
-    const result = await submitToWebhook({ action: 'get-batches' }, 'VIEW_EXPIRY');
+    const result = await submitToWebhook({ action: 'get-batches' }, 'GET_BATCHES');
     
     if (result.success && result.data) {
       const batches = result.data.batches || [];
@@ -76,7 +76,7 @@ export const fetchLiveBatches = async (): Promise<Batch[]> => {
 // Fetch stock levels
 export const fetchStockLevels = async (): Promise<StockLevel[]> => {
   try {
-    const result = await submitToWebhook({ action: 'get-stock-levels' }, 'VIEW_STOCK');
+    const result = await submitToWebhook({ action: 'get-stock-levels' }, 'GET_STOCK_LEVELS');
     
     if (result.success && result.data) {
       return result.data.stockLevels || [];

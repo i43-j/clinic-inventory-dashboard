@@ -10,6 +10,18 @@ const WEBHOOKS = {
     primary: 'https://i43-j.app.n8n.cloud/webhook/log-batch',
     fallback: 'https://i43-j.app.n8n.cloud/webhook-test/log-batch'
   },
+  GET_PRODUCTS: {
+    primary: 'https://i43-j.app.n8n.cloud/webhook/get-products',
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/get-products'
+  },
+  GET_BATCHES: {
+    primary: 'https://i43-j.app.n8n.cloud/webhook/get-batches',
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/get-batches'
+  },
+  GET_STOCK_LEVELS: {
+    primary: 'https://i43-j.app.n8n.cloud/webhook/get-stock-levels',
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/get-stock-levels'
+  },
   VIEW_STOCK: {
     primary: 'https://i43-j.app.n8n.cloud/webhook/view-stock',
     fallback: 'https://i43-j.app.n8n.cloud/webhook-test/view-stock'
