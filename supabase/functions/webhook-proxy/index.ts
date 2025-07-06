@@ -40,11 +40,11 @@ serve(async (req) => {
     headers.delete("origin")
     headers.delete("host")
 
-    // Build the proxied request
+    // Build the proxied request - always use POST for n8n webhooks
     const forwardedRequest = new Request(n8nUrl, {
-      method: req.method,
+      method: "POST",
       headers,
-      body: req.method !== "GET" ? await req.text() : undefined,
+      body: await req.text(),
     })
 
     // Fetch from n8n
