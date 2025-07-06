@@ -1,13 +1,55 @@
 
 import { SubmissionResult } from '../pages/Index';
 
-const PRIMARY_WEBHOOK = 'https://i43-j.app.n8n.cloud/webhook-test/form';
-const FALLBACK_WEBHOOK = 'https://i43-j.app.n8n.cloud/webhook/form';
+// Separate webhook endpoints for different actions
+const WEBHOOKS = {
+  OCR_PROCESS: {
+    primary: 'https://i43-j.app.n8n.cloud/webhook/ocr-process',
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/ocr-process'
+  },
+  LOG_BATCH: {
+    primary: 'https://i43-j.app.n8n.cloud/webhook/log-batch',
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/log-batch'
+  },
+  VIEW_STOCK: {
+    primary: 'https://i43-j.app.n8n.cloud/webhook/view-stock',
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/view-stock'
+  },
+  VIEW_EXPIRY: {
+    primary: 'https://i43-j.app.n8n.cloud/webhook/view-expiry',
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/view-expiry'
+  },
+  UPDATE_STOCK: {
+    primary: 'https://i43-j.app.n8n.cloud/webhook/update-stock',
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/update-stock'
+  },
+  ADD_PRODUCT: {
+    primary: 'https://i43-j.app.n8n.cloud/webhook/add-product',
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/add-product'
+  }
+};
 
-export const submitToWebhook = async (data: any | FormData): Promise<SubmissionResult> => {
-  console.log('Submitting data:', data);
+const createFetchWithTimeout = (timeoutMs: number = 30000) => {
+  return (url: string, options: RequestInit): Promise<Response> => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+      )
+    ]);
+  };
+};
+
+export const submitToWebhook = async (data: any | FormData, action: string): Promise<SubmissionResult> => {
+  console.log('Submitting data for action:', action, data);
+
+  const webhookConfig = WEBHOOKS[action as keyof typeof WEBHOOKS];
+  if (!webhookConfig) {
+    return { success: false, error: 'Invalid action specified' };
+  }
 
   const isFormData = data instanceof FormData;
+  const fetchWithTimeout = createFetchWithTimeout(30000);
   
   const requestOptions: RequestInit = {
     method: 'POST',
@@ -22,7 +64,7 @@ export const submitToWebhook = async (data: any | FormData): Promise<SubmissionR
 
   // Try primary webhook first
   try {
-    const response = await fetch(PRIMARY_WEBHOOK, requestOptions);
+    const response = await fetchWithTimeout(webhookConfig.primary, requestOptions);
 
     if (response.ok) {
       const responseData = await response.json();
@@ -38,7 +80,7 @@ export const submitToWebhook = async (data: any | FormData): Promise<SubmissionR
     // Try fallback webhook
     try {
       console.log('Trying fallback webhook...');
-      const fallbackResponse = await fetch(FALLBACK_WEBHOOK, requestOptions);
+      const fallbackResponse = await fetchWithTimeout(webhookConfig.fallback, requestOptions);
 
       if (fallbackResponse.ok) {
         const responseData = await fallbackResponse.json();
@@ -50,9 +92,12 @@ export const submitToWebhook = async (data: any | FormData): Promise<SubmissionR
       }
     } catch (fallbackError) {
       console.log('Fallback webhook error:', fallbackError);
+      const isTimeout = fallbackError instanceof Error && fallbackError.message === 'Request timeout';
       return {
         success: false,
-        error: 'Both primary and fallback webhooks failed. Please check your internet connection and try again.'
+        error: isTimeout 
+          ? 'Request timed out after 30 seconds. Please check your connection and try again.'
+          : 'Both primary and fallback webhooks failed. Please check your internet connection and try again.'
       };
     }
   }
@@ -65,6 +110,9 @@ export const processImageOCR = async (imageFile: File): Promise<SubmissionResult
   formData.append('action', 'ocr-process');
   formData.append('image', imageFile);
 
+  const fetchWithTimeout = createFetchWithTimeout(30000);
+  const webhookConfig = WEBHOOKS.OCR_PROCESS;
+
   const requestOptions: RequestInit = {
     method: 'POST',
     body: formData,
@@ -72,7 +120,7 @@ export const processImageOCR = async (imageFile: File): Promise<SubmissionResult
 
   // Try primary webhook first
   try {
-    const response = await fetch(PRIMARY_WEBHOOK, requestOptions);
+    const response = await fetchWithTimeout(webhookConfig.primary, requestOptions);
 
     if (response.ok) {
       const responseData = await response.json();
@@ -88,7 +136,7 @@ export const processImageOCR = async (imageFile: File): Promise<SubmissionResult
     // Try fallback webhook
     try {
       console.log('Trying fallback webhook for OCR...');
-      const fallbackResponse = await fetch(FALLBACK_WEBHOOK, requestOptions);
+      const fallbackResponse = await fetchWithTimeout(webhookConfig.fallback, requestOptions);
 
       if (fallbackResponse.ok) {
         const responseData = await fallbackResponse.json();
@@ -100,9 +148,12 @@ export const processImageOCR = async (imageFile: File): Promise<SubmissionResult
       }
     } catch (fallbackError) {
       console.log('OCR fallback error:', fallbackError);
+      const isTimeout = fallbackError instanceof Error && fallbackError.message === 'Request timeout';
       return {
         success: false,
-        error: 'OCR processing failed. You can still fill out the form manually.'
+        error: isTimeout 
+          ? 'OCR processing timed out after 30 seconds. You can still fill out the form manually.'
+          : 'OCR processing failed. You can still fill out the form manually.'
       };
     }
   }

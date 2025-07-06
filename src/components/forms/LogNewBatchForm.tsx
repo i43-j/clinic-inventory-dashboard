@@ -108,7 +108,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
       formData.append('image', selectedImage);
     }
 
-    const result = await submitToWebhook(formData);
+    const result = await submitToWebhook(formData, 'LOG_BATCH');
     onSubmit(result);
     setIsSubmitting(false);
   };

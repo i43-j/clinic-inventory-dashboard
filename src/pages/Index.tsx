@@ -31,13 +31,7 @@ const Index = () => {
   const mockDashboardData = {
     totalProducts: 42,
     expiringBatches: 3,
-    outOfStockSKUs: 1,
-    lastAddedProduct: "Royal Canin Kitten 2kg",
-    recentActivity: [
-      { id: "1", action: "Logged new batch", product: "Royal Canin", date: "07/03" },
-      { id: "2", action: "Updated stock", product: "Frontline Plus", date: "06/03" },
-      { id: "3", action: "Added product", product: "Hill's Science Diet", date: "05/03" }
-    ]
+    lastAddedProduct: "Royal Canin Kitten 2kg"
   };
 
   const handleActionSelect = (action: ActionType) => {
