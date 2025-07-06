@@ -2,7 +2,7 @@ import { SubmissionResult } from '../pages/Index';
 
 /** Your deployed Supabase Edge Function proxy URL */
 const PROXY_BASE_URL =
-  'https://xcuenzawbfndwfivfghz.functions.supabase.co/webhook-proxy';
+  'https://xzuenzawbfndvfwfghzi.supabase.co/functions/v1/webhook-proxy';
 
 /** All webhook endpoints used in the app */
 const WEBHOOK_ENDPOINTS = {
