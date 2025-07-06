@@ -7,13 +7,11 @@ import { Package, Clock } from 'lucide-react';
 interface DashboardStatsProps {
   totalProducts?: number;
   expiringBatches?: number;
-  lastAddedProduct?: string;
 }
 
 export const DashboardStats: React.FC<DashboardStatsProps> = ({
   totalProducts = 0,
   expiringBatches = 0,
-  lastAddedProduct = "None"
 }) => {
   const statsCards = [
     {
@@ -66,22 +64,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
           );
         })}
       </div>
-
-      {/* Last Added Product Card */}
-      <Card className="hover:shadow-md transition-shadow duration-200 animate-fade-in">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center space-x-2 text-lg">
-            <Package className="h-5 w-5 text-indigo-600" />
-            <span>Latest Addition</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Last Added Product:</span>
-            <span className="font-medium text-gray-900">{lastAddedProduct}</span>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

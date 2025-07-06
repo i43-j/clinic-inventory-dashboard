@@ -1,4 +1,3 @@
-
 import { SubmissionResult } from '../pages/Index';
 
 // Separate webhook endpoints for different actions
@@ -26,6 +25,10 @@ const WEBHOOKS = {
   ADD_PRODUCT: {
     primary: 'https://i43-j.app.n8n.cloud/webhook/add-product',
     fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/add-product'
+  },
+  DASHBOARD_STATS: {
+    primary: 'https://i43-j.app.n8n.cloud/webhook/dashboard-stats',
+    fallback: 'https://i43-j.app.n8n.cloud/webhook-fallback/dashboard-stats'
   }
 };
 

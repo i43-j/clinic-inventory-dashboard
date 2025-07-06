@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MainMenu } from '../components/MainMenu';
 import { DashboardStats } from '../components/DashboardStats';
@@ -8,6 +9,7 @@ import { UpdatingStockForm } from '../components/forms/UpdatingStockForm';
 import { AddingProductForm } from '../components/forms/AddingProductForm';
 import { ResultPage } from '../components/ResultPage';
 import { ClinicHeader } from '../components/ClinicHeader';
+import { useDashboard } from '../hooks/useDashboard';
 
 export type ActionType = 
   | 'log-batch' 
@@ -26,13 +28,7 @@ export interface SubmissionResult {
 const Index = () => {
   const [currentAction, setCurrentAction] = useState<ActionType>(null);
   const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
-
-  // Mock data for dashboard - replace with actual API calls
-  const mockDashboardData = {
-    totalProducts: 42,
-    expiringBatches: 3,
-    lastAddedProduct: "Royal Canin Kitten 2kg"
-  };
+  const { stats, loading: dashboardLoading } = useDashboard();
 
   const handleActionSelect = (action: ActionType) => {
     setCurrentAction(action);
@@ -75,7 +71,10 @@ const Index = () => {
       default:
         return (
           <>
-            <DashboardStats {...mockDashboardData} />
+            <DashboardStats 
+              totalProducts={dashboardLoading ? 0 : stats.totalProducts}
+              expiringBatches={dashboardLoading ? 0 : stats.expiringBatches}
+            />
             <MainMenu onActionSelect={handleActionSelect} />
           </>
         );
