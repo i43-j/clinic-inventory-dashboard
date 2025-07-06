@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
-import { submitToWebhook } from '../../data/webhookService';
 import { useProducts, useBatches } from '../../hooks/useLiveData';
 
 interface UpdatingStockFormProps {
@@ -46,8 +45,21 @@ export const UpdatingStockForm: React.FC<UpdatingStockFormProps> = ({ onSubmit, 
       quantity: Number(data.quantity)
     };
 
-    const result = await submitToWebhook(submissionData, 'UPDATE_STOCK');
-    onSubmit(result);
+    try {
+      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/update-stock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissionData)
+      });
+      
+      const result: SubmissionResult = response.ok 
+        ? { success: true, data: await response.json() }
+        : { success: false, error: `Request failed with status ${response.status}` };
+      
+      onSubmit(result);
+    } catch (error) {
+      onSubmit({ success: false, error: 'Network error occurred' });
+    }
     setIsSubmitting(false);
   };
 
@@ -116,7 +128,7 @@ export const UpdatingStockForm: React.FC<UpdatingStockFormProps> = ({ onSubmit, 
                 {availableBatches.length > 0 ? (
                   availableBatches.map((batch) => (
                     <SelectItem key={batch.id} value={batch.id}>
-                      {batch.name} (Exp: {batch.expiryDate})
+                      {batch.batchName} (Exp: {batch.expiryDate})
                     </SelectItem>
                   ))
                 ) : (

@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Upload, Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
-import { submitToWebhook, processImageOCR } from '../../data/webhookService';
 import { useProducts } from '../../hooks/useLiveData';
 
 interface LogNewBatchFormProps {
@@ -43,31 +42,24 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
     }
   });
 
-  const selectedProduct = watch('product');
-
-  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-
-      // Process image for OCR immediately
-      setIsProcessingImage(true);
-      try {
-        const ocrResult = await processImageOCR(file);
-        if (ocrResult.success && ocrResult.data) {
-          console.log('OCR Response:', ocrResult.data);
-          
-          // Parse OCR response and auto-fill form fields
-          const ocrData = Array.isArray(ocrResult.data) ? ocrResult.data[0] : ocrResult.data;
+  const processOCR = async (file: File) => {
+    setIsProcessingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/ocr-process', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data) {
+          const ocrData = data;
           
           if (ocrData.productName || ocrData.product) {
             const productName = ocrData.productName || ocrData.product;
-            // Find matching product by name
             const matchingProduct = products.find(p => 
               p.name.toLowerCase().includes(productName.toLowerCase()) ||
               productName.toLowerCase().includes(p.name.toLowerCase())
@@ -90,7 +82,6 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
           
           if (ocrData.expiryDate || ocrData.expiry) {
             const expiryStr = ocrData.expiryDate || ocrData.expiry;
-            // Try to parse and format the date
             const parsedDate = new Date(expiryStr);
             if (!isNaN(parsedDate.getTime())) {
               setValue('expiryDate', parsedDate.toISOString().split('T')[0]);
@@ -103,11 +94,24 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
           
           console.log('OCR data applied to form:', ocrData);
         }
-      } catch (error) {
-        console.error('OCR processing failed:', error);
-      } finally {
-        setIsProcessingImage(false);
       }
+    } catch (error) {
+      console.error('OCR processing failed:', error);
+    } finally {
+      setIsProcessingImage(false);
+    }
+  };
+
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      await processOCR(file);
     }
   };
 
@@ -135,8 +139,20 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
       formData.append('image', selectedImage);
     }
 
-    const result = await submitToWebhook(formData, 'LOG_BATCH');
-    onSubmit(result);
+    try {
+      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/log-batch', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result: SubmissionResult = response.ok 
+        ? { success: true, data: await response.json() }
+        : { success: false, error: `Request failed with status ${response.status}` };
+      
+      onSubmit(result);
+    } catch (error) {
+      onSubmit({ success: false, error: 'Network error occurred' });
+    }
     setIsSubmitting(false);
   };
 
@@ -173,11 +189,8 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
-          {/* Image Upload Section */}
           <div className="space-y-2">
             <Label htmlFor="imageUpload">Attach Image (Optional)</Label>
-            <p className="text-sm text-gray-600">Upload an image of the product label or batch information for automatic OCR processing</p>
-            
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
               {isProcessingImage ? (
                 <div className="space-y-4">
@@ -265,7 +278,8 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
               placeholder="Enter quantity received"
               {...register('quantity', { 
                 required: 'Quantity is required',
-                min: { value: 1, message: 'Quantity must be at least 1' }
+                min: { value: 1, message: 'Quantity must be at least 1' },
+                valueAsNumber: true
               })}
             />
             {errors.quantity && <p className="text-sm text-red-600">{errors.quantity.message}</p>}

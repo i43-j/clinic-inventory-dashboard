@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
-import { submitToWebhook } from '../../data/webhookService';
 import { useProducts } from '../../hooks/useLiveData';
 
 interface ViewClosestExpiryFormProps {
@@ -35,8 +34,21 @@ export const ViewClosestExpiryForm: React.FC<ViewClosestExpiryFormProps> = ({ on
       product: data.product || 'all'
     };
 
-    const result = await submitToWebhook(submissionData, 'VIEW_EXPIRY');
-    onSubmit(result);
+    try {
+      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/view-expiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissionData)
+      });
+      
+      const result: SubmissionResult = response.ok 
+        ? { success: true, data: await response.json() }
+        : { success: false, error: `Request failed with status ${response.status}` };
+      
+      onSubmit(result);
+    } catch (error) {
+      onSubmit({ success: false, error: 'Network error occurred' });
+    }
     setIsSubmitting(false);
   };
 

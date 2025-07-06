@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SubmissionResult } from '../../pages/Index';
-import { submitToWebhook } from '../../data/webhookService';
 
 interface AddingProductFormProps {
   onSubmit: (result: SubmissionResult) => void;
@@ -20,6 +18,7 @@ interface FormData {
   category: string;
   unit: string;
   supplierName: string;
+  threshold: number;
 }
 
 const categories = [
@@ -37,11 +36,29 @@ export const AddingProductForm: React.FC<AddingProductFormProps> = ({ onSubmit, 
     
     const submissionData = {
       action: 'add-product',
-      ...data
+      productName: data.productName,
+      skuCode: data.skuCode,
+      category: data.category,
+      supplierName: data.supplierName,
+      unit: data.unit,
+      threshold: data.threshold,
     };
 
-    const result = await submitToWebhook(submissionData, 'ADD_PRODUCT');
-    onSubmit(result);
+    try {
+      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/add-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissionData)
+      });
+      
+      const result: SubmissionResult = response.ok 
+        ? { success: true, data: await response.json() }
+        : { success: false, error: `Request failed with status ${response.status}` };
+      
+      onSubmit(result);
+    } catch (error) {
+      onSubmit({ success: false, error: 'Network error occurred' });
+    }
     setIsSubmitting(false);
   };
 
@@ -108,6 +125,16 @@ export const AddingProductForm: React.FC<AddingProductFormProps> = ({ onSubmit, 
               id="supplierName"
               placeholder="e.g., Pet Supplies Co."
               {...register('supplierName')}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="threshold">Threshold</Label>
+            <Input
+              id="threshold"
+              type="number"
+              placeholder="e.g., 10"
+              {...register('threshold', { valueAsNumber: true })}
             />
           </div>
 
