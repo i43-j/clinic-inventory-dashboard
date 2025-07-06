@@ -1,46 +1,49 @@
 import { SubmissionResult } from '../pages/Index';
 
-// Separate webhook endpoints for different actions
-const WEBHOOKS = {
+// Proxy endpoint configuration - replace YOUR_PROJECT_ID with your actual Supabase project ID
+const PROXY_BASE_URL = 'https://YOUR_PROJECT_ID.supabase.co/functions/v1/webhook-proxy';
+
+// Webhook endpoints configuration
+const WEBHOOK_ENDPOINTS = {
   OCR_PROCESS: {
-    primary: 'https://i43-j.app.n8n.cloud/webhook/ocr-process',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/ocr-process'
+    primary: 'ocr-process',
+    fallback: 'ocr-process' // Using same endpoint for now
   },
   LOG_BATCH: {
-    primary: 'https://i43-j.app.n8n.cloud/webhook/log-batch',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/log-batch'
+    primary: 'log-batch',
+    fallback: 'log-batch'
   },
   GET_PRODUCTS: {
-    primary: 'https://i43-j.app.n8n.cloud/webhook/get-products',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/get-products'
+    primary: 'get-products',
+    fallback: 'get-products'
   },
   GET_BATCHES: {
-    primary: 'https://i43-j.app.n8n.cloud/webhook/get-batches',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/get-batches'
+    primary: 'get-batches',
+    fallback: 'get-batches'
   },
   GET_STOCK_LEVELS: {
-    primary: 'https://i43-j.app.n8n.cloud/webhook/get-stock-levels',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/get-stock-levels'
+    primary: 'get-stock-levels',
+    fallback: 'get-stock-levels'
   },
   VIEW_STOCK: {
-    primary: 'https://i43-j.app.n8n.cloud/webhook/view-stock',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/view-stock'
+    primary: 'view-stock',
+    fallback: 'view-stock'
   },
   VIEW_EXPIRY: {
-    primary: 'https://i43-j.app.n8n.cloud/webhook/view-expiry',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/view-expiry'
+    primary: 'view-expiry',
+    fallback: 'view-expiry'
   },
   UPDATE_STOCK: {
-    primary: 'https://i43-j.app.n8n.cloud/webhook/update-stock',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/update-stock'
+    primary: 'update-stock',
+    fallback: 'update-stock'
   },
   ADD_PRODUCT: {
-    primary: 'https://i43-j.app.n8n.cloud/webhook/add-product',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/add-product'
+    primary: 'add-product',
+    fallback: 'add-product'
   },
   DASHBOARD_STATS: {
-    primary: 'https://i43-j.app.n8n.cloud/webhook/dashboard-stats',
-    fallback: 'https://i43-j.app.n8n.cloud/webhook-test/dashboard-stats'
+    primary: 'dashboard-stats',
+    fallback: 'dashboard-stats'
   }
 };
 
@@ -58,13 +61,16 @@ const createFetchWithTimeout = (timeoutMs: number = 30000) => {
 export const submitToWebhook = async (data: any | FormData, action: string): Promise<SubmissionResult> => {
   console.log('Submitting data for action:', action, data);
 
-  const webhookConfig = WEBHOOKS[action as keyof typeof WEBHOOKS];
+  const webhookConfig = WEBHOOK_ENDPOINTS[action as keyof typeof WEBHOOK_ENDPOINTS];
   if (!webhookConfig) {
     return { success: false, error: 'Invalid action specified' };
   }
 
   const isFormData = data instanceof FormData;
   const fetchWithTimeout = createFetchWithTimeout(30000);
+  
+  // Use proxy endpoint instead of direct webhook calls
+  const proxyUrl = `${PROXY_BASE_URL}?endpoint=${webhookConfig.primary}`;
   
   const requestOptions: RequestInit = {
     method: 'POST',
@@ -77,44 +83,30 @@ export const submitToWebhook = async (data: any | FormData, action: string): Pro
     };
   }
 
-  // Try primary webhook first
   try {
-    const response = await fetchWithTimeout(webhookConfig.primary, requestOptions);
+    const response = await fetchWithTimeout(proxyUrl, requestOptions);
 
     if (response.ok) {
       const responseData = await response.json();
-      console.log('Primary webhook success:', responseData);
+      console.log('Webhook proxy success:', responseData);
       return { success: true, data: responseData };
     } else {
-      console.log('Primary webhook failed with status:', response.status);
-      throw new Error(`Primary webhook failed with status ${response.status}`);
-    }
-  } catch (error) {
-    console.log('Primary webhook error:', error);
-    
-    // Try fallback webhook
-    try {
-      console.log('Trying fallback webhook...');
-      const fallbackResponse = await fetchWithTimeout(webhookConfig.fallback, requestOptions);
-
-      if (fallbackResponse.ok) {
-        const responseData = await fallbackResponse.json();
-        console.log('Fallback webhook success:', responseData);
-        return { success: true, data: responseData };
-      } else {
-        console.log('Fallback webhook failed with status:', fallbackResponse.status);
-        throw new Error(`Fallback webhook failed with status ${fallbackResponse.status}`);
-      }
-    } catch (fallbackError) {
-      console.log('Fallback webhook error:', fallbackError);
-      const isTimeout = fallbackError instanceof Error && fallbackError.message === 'Request timeout';
-      return {
-        success: false,
-        error: isTimeout 
-          ? 'Request timed out after 30 seconds. Please check your connection and try again.'
-          : 'Both primary and fallback webhooks failed. Please check your internet connection and try again.'
+      console.log('Webhook proxy failed with status:', response.status);
+      const errorText = await response.text();
+      return { 
+        success: false, 
+        error: `Webhook failed with status ${response.status}: ${errorText}` 
       };
     }
+  } catch (error) {
+    console.log('Webhook proxy error:', error);
+    const isTimeout = error instanceof Error && error.message === 'Request timeout';
+    return {
+      success: false,
+      error: isTimeout 
+        ? 'Request timed out after 30 seconds. Please check your connection and try again.'
+        : 'Webhook request failed. Please check your internet connection and try again.'
+    };
   }
 };
 
@@ -126,16 +118,18 @@ export const processImageOCR = async (imageFile: File): Promise<SubmissionResult
   formData.append('image', imageFile);
 
   const fetchWithTimeout = createFetchWithTimeout(30000);
-  const webhookConfig = WEBHOOKS.OCR_PROCESS;
+  const webhookConfig = WEBHOOK_ENDPOINTS.OCR_PROCESS;
+
+  // Use proxy endpoint instead of direct webhook calls
+  const proxyUrl = `${PROXY_BASE_URL}?endpoint=${webhookConfig.primary}`;
 
   const requestOptions: RequestInit = {
     method: 'POST',
     body: formData,
   };
 
-  // Try primary webhook first
   try {
-    const response = await fetchWithTimeout(webhookConfig.primary, requestOptions);
+    const response = await fetchWithTimeout(proxyUrl, requestOptions);
 
     if (response.ok) {
       const responseData = await response.json();
@@ -143,33 +137,20 @@ export const processImageOCR = async (imageFile: File): Promise<SubmissionResult
       return { success: true, data: responseData };
     } else {
       console.log('OCR processing failed with status:', response.status);
-      throw new Error(`OCR processing failed with status ${response.status}`);
+      const errorText = await response.text();
+      return { 
+        success: false, 
+        error: `OCR processing failed with status ${response.status}: ${errorText}` 
+      };
     }
   } catch (error) {
     console.log('OCR processing error:', error);
-    
-    // Try fallback webhook
-    try {
-      console.log('Trying fallback webhook for OCR...');
-      const fallbackResponse = await fetchWithTimeout(webhookConfig.fallback, requestOptions);
-
-      if (fallbackResponse.ok) {
-        const responseData = await fallbackResponse.json();
-        console.log('OCR fallback success:', responseData);
-        return { success: true, data: responseData };
-      } else {
-        console.log('OCR fallback failed with status:', fallbackResponse.status);
-        throw new Error(`OCR fallback failed with status ${fallbackResponse.status}`);
-      }
-    } catch (fallbackError) {
-      console.log('OCR fallback error:', fallbackError);
-      const isTimeout = fallbackError instanceof Error && fallbackError.message === 'Request timeout';
-      return {
-        success: false,
-        error: isTimeout 
-          ? 'OCR processing timed out after 30 seconds. You can still fill out the form manually.'
-          : 'OCR processing failed. You can still fill out the form manually.'
-      };
-    }
+    const isTimeout = error instanceof Error && error.message === 'Request timeout';
+    return {
+      success: false,
+      error: isTimeout 
+        ? 'OCR processing timed out after 30 seconds. You can still fill out the form manually.'
+        : 'OCR processing failed. You can still fill out the form manually.'
+    };
   }
 };
