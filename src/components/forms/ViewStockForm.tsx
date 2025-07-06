@@ -37,7 +37,7 @@ export const ViewStockForm: React.FC<ViewStockFormProps> = ({ onSubmit, onBack }
       ...data
     };
 
-    const result = await submitToWebhook(submissionData);
+    const result = await submitToWebhook(submissionData, 'view-stock');
     onSubmit(result);
     setIsSubmitting(false);
   };

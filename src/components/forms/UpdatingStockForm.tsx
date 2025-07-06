@@ -41,7 +41,7 @@ export const UpdatingStockForm: React.FC<UpdatingStockFormProps> = ({ onSubmit, 
       quantity: Number(data.quantity)
     };
 
-    const result = await submitToWebhook(submissionData);
+    const result = await submitToWebhook(submissionData, 'update-stock');
     onSubmit(result);
     setIsSubmitting(false);
   };

@@ -33,7 +33,7 @@ export const ViewClosestExpiryForm: React.FC<ViewClosestExpiryFormProps> = ({ on
       product: data.product || 'all'
     };
 
-    const result = await submitToWebhook(submissionData);
+    const result = await submitToWebhook(submissionData, 'view-expiry');
     onSubmit(result);
     setIsSubmitting(false);
   };
@@ -46,7 +46,7 @@ export const ViewClosestExpiryForm: React.FC<ViewClosestExpiryFormProps> = ({ on
       product: 'all'
     };
 
-    submitToWebhook(submissionData).then((result) => {
+    submitToWebhook(submissionData, 'view-expiry').then((result) => {
       onSubmit(result);
       setIsSubmitting(false);
     });
