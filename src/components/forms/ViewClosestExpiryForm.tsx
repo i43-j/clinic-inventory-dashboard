@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { submitToWebhook } from '../utils/webhook';  // adjust the path as needed
+
 
 export default function ViewClosestExpiryForm() {
   const [loading, setLoading] = useState(false);
@@ -11,8 +11,16 @@ export default function ViewClosestExpiryForm() {
     setError(null);
     setResult(null);
     try {
-      // Call the n8n webhook endpoint "view-closest-expiry"
-      const data = await submitToWebhook('view-closest-expiry');
+      // Call the correct API endpoint for closest expiry
+      const response = await fetch('/api/view-expiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
       setResult(data);
     } catch (err) {
       // Handle any errors from the webhook call
