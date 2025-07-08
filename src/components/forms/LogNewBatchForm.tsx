@@ -62,21 +62,6 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
         if (data) {
           const ocrData = data;
           
-          if (ocrData.productName || ocrData.product) {
-            const productName = ocrData.productName || ocrData.product;
-            const matchingProduct = products.find(p => 
-              p.name.toLowerCase().includes(productName.toLowerCase()) ||
-              productName.toLowerCase().includes(p.name.toLowerCase())
-            );
-            if (matchingProduct) {
-              setValue('product', matchingProduct.id.toString());
-            }
-          }
-          
-          if (ocrData.batchName || ocrData.batch) {
-            setValue('batchName', ocrData.batchName || ocrData.batch);
-          }
-          
           if (ocrData.quantity) {
             const qty = parseInt(ocrData.quantity.toString());
             if (!isNaN(qty)) {
@@ -90,10 +75,6 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
             if (!isNaN(parsedDate.getTime())) {
               setValue('expiryDate', parsedDate.toISOString().split('T')[0]);
             }
-          }
-          
-          if (ocrData.notes || ocrData.description) {
-            setValue('notes', ocrData.notes || ocrData.description);
           }
           
           console.log('OCR data applied to form:', ocrData);
