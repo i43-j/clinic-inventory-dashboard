@@ -25,8 +25,8 @@ export const useBatches = () => {
           const data = await response.json();
           console.log('📦 Batches data received:', data);
           
-          // Handle both array and object responses
-          const batchesArray = Array.isArray(data) ? data : (data.batches || []);
+          // Handle array responses from n8n
+          const batchesArray = Array.isArray(data) ? data : [];
           setBatches(batchesArray);
         } else {
           const errorText = `Failed to fetch batches: ${response.status} ${response.statusText}`;
