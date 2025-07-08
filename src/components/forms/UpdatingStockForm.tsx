@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
-import { useProducts, useBatches } from '../../hooks/useLiveData';
+import { useProducts } from '../../hooks/useProducts';
+import { useBatches } from '../../hooks/useBatches';
 
 interface UpdatingStockFormProps {
   onSubmit: (result: SubmissionResult) => void;
@@ -46,18 +47,26 @@ export const UpdatingStockForm: React.FC<UpdatingStockFormProps> = ({ onSubmit, 
     };
 
     try {
-      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/update-stock', {
+      console.log('🔄 Updating stock via proxy...', submissionData);
+      
+      const response = await fetch('/api/update-stock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)
       });
       
-      const result: SubmissionResult = response.ok 
-        ? { success: true, data: await response.json() }
-        : { success: false, error: `Request failed with status ${response.status}` };
+      console.log('📊 Update stock response status:', response.status);
       
-      onSubmit(result);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 Update stock data received:', data);
+        onSubmit({ success: true, data });
+      } else {
+        console.error('❌ Update stock API error:', response.status, response.statusText);
+        onSubmit({ success: false, error: `Request failed with status ${response.status}` });
+      }
     } catch (error) {
+      console.error('❌ Update stock fetch failed:', error);
       onSubmit({ success: false, error: 'Network error occurred' });
     }
     setIsSubmitting(false);
@@ -128,7 +137,7 @@ export const UpdatingStockForm: React.FC<UpdatingStockFormProps> = ({ onSubmit, 
                 {availableBatches.length > 0 ? (
                   availableBatches.map((batch) => (
                     <SelectItem key={batch.id} value={batch.id}>
-                      {batch.batchName} (Exp: {batch.expiryDate})
+                      {batch.batchNumber} (Exp: {batch.expiryDate})
                     </SelectItem>
                   ))
                 ) : (

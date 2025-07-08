@@ -12,15 +12,20 @@ export default function ViewClosestExpiryForm() {
     setResult(null);
     try {
       // Call the correct API endpoint for closest expiry
+      console.log('🔄 Fetching closest expiry via proxy...');
+      
       const response = await fetch('/api/view-expiry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})
       });
+      
+      console.log('📅 View expiry response status:', response.status);
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
+      console.log('📅 View expiry data received:', data);
       setResult(data);
     } catch (err) {
       // Handle any errors from the webhook call

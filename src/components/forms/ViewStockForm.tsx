@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
-import { useProducts } from '../../hooks/useLiveData';
+import { useProducts } from '../../hooks/useProducts';
 
 interface ViewStockFormProps {
   onSubmit: (result: SubmissionResult) => void;
@@ -39,18 +39,26 @@ export const ViewStockForm: React.FC<ViewStockFormProps> = ({ onSubmit, onBack }
     };
 
     try {
-      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/view-stock', {
+      console.log('🔄 Fetching stock via proxy...', submissionData);
+      
+      const response = await fetch('/api/view-stock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)
       });
       
-      const result: SubmissionResult = response.ok 
-        ? { success: true, data: await response.json() }
-        : { success: false, error: 'Network error occurred' };
+      console.log('📊 View stock response status:', response.status);
       
-      onSubmit(result);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 View stock data received:', data);
+        onSubmit({ success: true, data });
+      } else {
+        console.error('❌ View stock API error:', response.status, response.statusText);
+        onSubmit({ success: false, error: 'Network error occurred' });
+      }
     } catch (error) {
+      console.error('❌ View stock fetch failed:', error);
       onSubmit({ success: false, error: 'Network error occurred' });
     }
     setIsSubmitting(false);

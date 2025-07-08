@@ -4,7 +4,7 @@ import { MainMenu } from '../components/MainMenu';
 import { DashboardStats } from '../components/DashboardStats';
 import { LogNewBatchForm } from '../components/forms/LogNewBatchForm';
 import { ViewStockForm } from '../components/forms/ViewStockForm';
-import { ViewClosestExpiryForm } from '../components/forms/ViewClosestExpiryForm';
+import ViewClosestExpiryForm from '../components/forms/ViewClosestExpiryForm';
 import { UpdatingStockForm } from '../components/forms/UpdatingStockForm';
 import { AddingProductForm } from '../components/forms/AddingProductForm';
 import { ResultPage } from '../components/ResultPage';
@@ -63,7 +63,7 @@ const Index = () => {
       case 'view-stock':
         return <ViewStockForm onSubmit={handleFormSubmit} onBack={handleBackToMenu} />;
       case 'view-expiry':
-        return <ViewClosestExpiryForm onSubmit={handleFormSubmit} onBack={handleBackToMenu} />;
+        return <ViewClosestExpiryForm />;
       case 'update-stock':
         return <UpdatingStockForm onSubmit={handleFormSubmit} onBack={handleBackToMenu} />;
       case 'add-product':

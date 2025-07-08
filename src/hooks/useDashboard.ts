@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { fetchDashboardStats, DashboardStats } from '../data/dashboardService';
+import { fetchDashboardStats } from '../data/dashboardService';
+import { DashboardStats } from '../types';
 
 export interface DashboardState {
   stats: DashboardStats;
@@ -21,7 +22,7 @@ export const useDashboard = (autoRefresh = true, refreshInterval = 60 * 60 * 100
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
-      const stats = await fetchDashboardStats(forceRefresh);
+      const stats = await fetchDashboardStats();
       
       setState({
         stats,

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Upload, Loader2 } from 'lucide-react';
 import { SubmissionResult } from '../../pages/Index';
-import { useProducts } from '../../hooks/useLiveData';
+import { useProducts } from '../../hooks/useProducts';
 
 interface LogNewBatchFormProps {
   onSubmit: (result: SubmissionResult) => void;
@@ -48,10 +48,14 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
       const formData = new FormData();
       formData.append('image', file);
       
-      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/ocr-process', {
+      console.log('🔄 Processing OCR via proxy...');
+      
+      const response = await fetch('/api/ocr-process', {
         method: 'POST',
         body: formData
       });
+      
+      console.log('📷 OCR response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
@@ -140,17 +144,25 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
     }
 
     try {
-      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/log-batch', {
+      console.log('🔄 Logging batch via proxy...', data);
+      
+      const response = await fetch('/api/log-batches', {
         method: 'POST',
         body: formData
       });
       
-      const result: SubmissionResult = response.ok 
-        ? { success: true, data: await response.json() }
-        : { success: false, error: `Request failed with status ${response.status}` };
+      console.log('📦 Log batch response status:', response.status);
       
-      onSubmit(result);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📦 Log batch data received:', data);
+        onSubmit({ success: true, data });
+      } else {
+        console.error('❌ Log batch API error:', response.status, response.statusText);
+        onSubmit({ success: false, error: `Request failed with status ${response.status}` });
+      }
     } catch (error) {
+      console.error('❌ Log batch fetch failed:', error);
       onSubmit({ success: false, error: 'Network error occurred' });
     }
     setIsSubmitting(false);
