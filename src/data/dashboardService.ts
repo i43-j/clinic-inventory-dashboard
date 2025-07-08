@@ -16,11 +16,14 @@ export const fetchDashboardStats = async (): Promise<DashboardStats> => {
       const data = await response.json();
       console.log('📊 Dashboard stats data received:', data);
       
+      // Handle both array and object responses - n8n returns array format
+      const statsData = Array.isArray(data) ? data[0] : data;
+      
       return {
-        totalProducts: data.totalProducts ?? 0,
-        expiringBatches: data.expiringBatches ?? 0,
-        lowStockItems: data.lowStockItems ?? 0,
-        outOfStockItems: data.outOfStockItems ?? 0,
+        totalProducts: statsData.totalProducts ?? 0,
+        expiringBatches: statsData.expiringBatches ?? 0,
+        lowStockItems: statsData.lowStockItems ?? 0,
+        outOfStockItems: statsData.outOfStockItems ?? 0,
       };
     } else {
       console.error('❌ Dashboard stats API error:', response.status, response.statusText);

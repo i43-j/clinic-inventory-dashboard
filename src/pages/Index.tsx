@@ -74,6 +74,8 @@ const Index = () => {
             <DashboardStats 
               totalProducts={dashboardLoading ? 0 : stats.totalProducts}
               expiringBatches={dashboardLoading ? 0 : stats.expiringBatches}
+              lowStockItems={dashboardLoading ? 0 : stats.lowStockItems}
+              outOfStockItems={dashboardLoading ? 0 : stats.outOfStockItems}
             />
             <MainMenu onActionSelect={handleActionSelect} />
           </>
