@@ -237,7 +237,11 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
 
           <div className="space-y-2">
             <Label htmlFor="product">Product *</Label>
-            <Select onValueChange={(value) => setValue('product', value)} value={watch('product')}>
+            <Select 
+              onValueChange={(value) => setValue('product', value)} 
+              value={watch('product')} 
+              {...register('product', { required: 'Product selection is required' })}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Search and select a product..." />
               </SelectTrigger>
@@ -249,7 +253,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
                 ))}
               </SelectContent>
             </Select>
-            {errors.product && <p className="text-sm text-red-600">Product selection is required</p>}
+            {errors.product && <p className="text-sm text-red-600">{errors.product.message}</p>}
           </div>
 
           <div className="space-y-2">
