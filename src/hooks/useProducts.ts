@@ -25,8 +25,8 @@ export const useProducts = () => {
           const data = await response.json();
           console.log('📦 Products data received:', data);
           
-          // Handle array responses from n8n
-          const productsArray = Array.isArray(data) ? data : [];
+          // Handle both direct array and nested object responses
+          const productsArray = Array.isArray(data) ? data : (data.products || []);
           setProducts(productsArray);
         } else {
           const errorText = `Failed to fetch products: ${response.status} ${response.statusText}`;

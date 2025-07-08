@@ -59,8 +59,8 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
       
       if (response.ok) {
         const data = await response.json();
-        if (data) {
-          const ocrData = data;
+        if (data && Array.isArray(data) && data.length > 0) {
+          const ocrData = data[0]; // Take first result from array
           
           if (ocrData.quantity) {
             const qty = parseInt(ocrData.quantity.toString());
@@ -237,11 +237,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
 
           <div className="space-y-2">
             <Label htmlFor="product">Product *</Label>
-            <Select 
-              onValueChange={(value) => setValue('product', value)} 
-              value={watch('product')} 
-              {...register('product', { required: 'Product selection is required' })}
-            >
+            <Select onValueChange={(value) => setValue('product', value)} value={watch('product')}>
               <SelectTrigger>
                 <SelectValue placeholder="Search and select a product..." />
               </SelectTrigger>
@@ -253,7 +249,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
                 ))}
               </SelectContent>
             </Select>
-            {errors.product && <p className="text-sm text-red-600">{errors.product.message}</p>}
+            {errors.product && <p className="text-sm text-red-600">Product selection is required</p>}
           </div>
 
           <div className="space-y-2">
