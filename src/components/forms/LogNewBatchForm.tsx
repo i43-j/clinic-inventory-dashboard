@@ -50,7 +50,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
       
       console.log('🔄 Processing OCR via proxy...');
       
-      const response = await fetch('/api/ocr-process', {
+      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/ocr-process', {
         method: 'POST',
         body: formData
       });
