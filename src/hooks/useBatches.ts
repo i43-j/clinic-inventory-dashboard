@@ -13,7 +13,7 @@ export const useBatches = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('/api/get-batches', {
+        const response = await fetch('https://i43-j.app.n8n.cloud/webhook/get-batches', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({})

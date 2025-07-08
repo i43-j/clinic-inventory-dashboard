@@ -49,7 +49,7 @@ export const UpdatingStockForm: React.FC<UpdatingStockFormProps> = ({ onSubmit, 
     try {
       console.log('🔄 Updating stock via proxy...', submissionData);
       
-      const response = await fetch('/api/update-stock', {
+      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/update-stock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

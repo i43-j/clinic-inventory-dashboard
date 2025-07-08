@@ -41,7 +41,7 @@ export const ViewStockForm: React.FC<ViewStockFormProps> = ({ onSubmit, onBack }
     try {
       console.log('🔄 Fetching stock via proxy...', submissionData);
       
-      const response = await fetch('/api/view-stock', {
+      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/view-stock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

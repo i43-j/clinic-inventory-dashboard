@@ -14,7 +14,7 @@ export default function ViewClosestExpiryForm() {
       // Call the correct API endpoint for closest expiry
       console.log('🔄 Fetching closest expiry via proxy...');
       
-      const response = await fetch('/api/view-expiry', {
+      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/view-expiry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})

@@ -13,7 +13,7 @@ export const useProducts = () => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch('/api/get-products', {
+        const response = await fetch('https://i43-j.app.n8n.cloud/webhook/get-products', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({})

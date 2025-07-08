@@ -146,7 +146,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
     try {
       console.log('🔄 Logging batch via proxy...', data);
       
-      const response = await fetch('/api/log-batches', {
+      const response = await fetch('https://i43-j.app.n8n.cloud/webhook/log-batch', {
         method: 'POST',
         body: formData
       });

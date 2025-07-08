@@ -4,7 +4,7 @@ export const fetchDashboardStats = async (): Promise<DashboardStats> => {
   try {
     console.log('🔄 Fetching dashboard stats via proxy...');
     
-    const response = await fetch('/api/dashboard-stats', {
+    const response = await fetch('https://i43-j.app.n8n.cloud/webhook/dashboard-stats', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({})
