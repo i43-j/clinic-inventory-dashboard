@@ -69,7 +69,7 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
               productName.toLowerCase().includes(p.name.toLowerCase())
             );
             if (matchingProduct) {
-              setValue('product', matchingProduct.id);
+              setValue('product', matchingProduct.id.toString());
             }
           }
           
@@ -256,13 +256,13 @@ export const LogNewBatchForm: React.FC<LogNewBatchFormProps> = ({ onSubmit, onBa
 
           <div className="space-y-2">
             <Label htmlFor="product">Product *</Label>
-            <Select onValueChange={(value) => setValue('product', value)}>
+            <Select onValueChange={(value) => setValue('product', value)} value={watch('product')}>
               <SelectTrigger>
                 <SelectValue placeholder="Search and select a product..." />
               </SelectTrigger>
               <SelectContent>
                 {products.map((product) => (
-                  <SelectItem key={product.id} value={product.id}>
+                  <SelectItem key={product.id} value={product.id.toString()}>
                     {product.name}
                   </SelectItem>
                 ))}
